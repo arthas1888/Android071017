@@ -83,6 +83,8 @@ public class MainFragment extends Fragment {
         }
         Logger.addLogAdapter(new AndroidLogAdapter());
         String url = "http://api.icndb.com/jokes/random/20";
+        //url = "https://plataforma.visionsatelital.co:9050/points/get_distance/?lat=9999&lon=9999";
+        Logger.w("isOnline: " + isOnline());
         if (isOnline())
             new HttpAsynTask(getActivity()).execute(url);
     }
@@ -128,7 +130,7 @@ public class MainFragment extends Fragment {
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
             if (s != null)
-                Logger.d(s);
+                Logger.json(s);
             else
                 Logger.e("sin datos");
         }
