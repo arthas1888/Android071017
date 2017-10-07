@@ -15,10 +15,15 @@ import com.android.volley.Request;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.RequestFuture;
 import com.cajalopez.apimapsapplication.R;
+import com.cajalopez.apimapsapplication.models.MyModel;
 import com.cajalopez.apimapsapplication.utilities.MySingleton;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.orhanobut.logger.AndroidLogAdapter;
 import com.orhanobut.logger.Logger;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -30,6 +35,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -130,7 +136,7 @@ public class MainFragment extends Fragment {
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
             if (s != null)
-                Logger.json(s);
+                processData(s);
             else
                 Logger.e("sin datos");
         }
@@ -230,6 +236,18 @@ public class MainFragment extends Fragment {
             }
 
             return sb.toString();
+        }
+    }
+
+    private void processData(String s) {
+        try {
+            JSONObject jsonObject = new JSONObject(s);
+            JSONArray jsonArray = jsonObject.getJSONArray("value");
+
+            Gson gson = new Gson();
+            ArrayList<MyModel> myModelArrayList = gson.fromJson(jsonArray.toString(), new TypeToken<ArrayList<MyModel>>(){}.getType());
+        } catch (JSONException e) {
+            e.printStackTrace();
         }
     }
 }
