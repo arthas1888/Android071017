@@ -12,6 +12,7 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import com.android.volley.Request;
 import com.android.volley.toolbox.JsonObjectRequest;
@@ -267,13 +268,13 @@ public class MainFragment extends Fragment {
     private MyModelCallBack mListener;
 
     public interface MyModelCallBack{
-        void notify(MyModel model);
+        void notify(MyModel model, TextView textView);
     }
 
     @Override
     public void onAttach(Context context) {
         super.onAttach(context);
-        //if (mListener instanceof MyModelCallBack)
+        if (context instanceof MyModelCallBack)
             mListener = (MyModelCallBack) context;
     }
 

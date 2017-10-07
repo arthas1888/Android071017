@@ -70,7 +70,7 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
             @Override
             public void onClick(View view) {
                 if (mListener != null){
-                    mListener.notify(holder.model);
+                    mListener.notify(holder.model, holder.mInfoTextView);
                 }
             }
         });

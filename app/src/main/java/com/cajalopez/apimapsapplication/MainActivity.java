@@ -1,6 +1,9 @@
 package com.cajalopez.apimapsapplication;
 
+import android.annotation.TargetApi;
+import android.app.ActivityOptions;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -13,6 +16,7 @@ import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.TextView;
 
 import com.cajalopez.apimapsapplication.fragments.MainFragment;
 import com.cajalopez.apimapsapplication.models.MyModel;
@@ -66,11 +70,16 @@ public class MainActivity extends AppCompatActivity implements MainFragment.MyMo
         return super.onOptionsItemSelected(item);
     }
 
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
     @Override
-    public void notify(MyModel model) {
+    public void notify(MyModel model, TextView textView) {
         Logger.d("ID: " + model.id);
         Intent intent = new Intent(MainActivity.this, DetailsActivity.class);
         intent.putExtra("model", model);
-        startActivity(intent);
+
+        ActivityOptions options = ActivityOptions
+                .makeSceneTransitionAnimation(this, textView, "robot");
+        //startActivity(intent);
+        startActivity(intent, options.toBundle());
     }
 }
