@@ -8,18 +8,24 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 
 import com.cajalopez.apimapsapplication.fragments.MainFragment;
+import com.cajalopez.apimapsapplication.models.MyModel;
+import com.orhanobut.logger.AndroidLogAdapter;
+import com.orhanobut.logger.Logger;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements MainFragment.MyModelCallBack {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Logger.addLogAdapter(new AndroidLogAdapter());
+
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
@@ -33,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
         });
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.add(R.id.container, new MainFragment());
+        fragmentTransaction.replace(R.id.container, new MainFragment());
         fragmentTransaction.commit();
     }
 
@@ -57,5 +63,10 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void notify(MyModel model) {
+        Logger.d("ID: " + model.id);
     }
 }

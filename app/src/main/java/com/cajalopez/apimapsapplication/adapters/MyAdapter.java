@@ -1,12 +1,14 @@
 package com.cajalopez.apimapsapplication.adapters;
 
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.cajalopez.apimapsapplication.R;
+import com.cajalopez.apimapsapplication.fragments.MainFragment;
 import com.cajalopez.apimapsapplication.models.MyModel;
 
 import java.util.ArrayList;
@@ -18,10 +20,12 @@ import java.util.ArrayList;
 public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
 
     private ArrayList<MyModel> mDataset;
+    private final MainFragment.MyModelCallBack mListener;
 
     // Provide a suitable constructor (depends on the kind of dataset)
-    public MyAdapter(ArrayList<MyModel> myDataset) {
+    public MyAdapter(ArrayList<MyModel> myDataset, MainFragment.MyModelCallBack listener) {
         mDataset = myDataset;
+        mListener = listener;
     }
 
     // Create new views (invoked by the layout manager)
@@ -55,13 +59,21 @@ public class MyAdapter extends RecyclerView.Adapter<MyAdapter.ViewHolder> {
 
     // Replace the contents of a view (invoked by the layout manager)
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(final ViewHolder holder, int position) {
         // - get element from your dataset at this position
         // - replace the contents of the view with that element
         holder.model = mDataset.get(position);
 
         holder.mInfoTextView.setText(holder.model.joke);
         holder.mCategoriesTextView.setText(holder.model.categories.toString());
+        holder.mView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (mListener != null){
+                    mListener.notify(holder.model);
+                }
+            }
+        });
 
     }
 
