@@ -2,6 +2,8 @@ package com.cajalopez.apimapsapplication.fragments;
 
 
 import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -81,7 +83,15 @@ public class MainFragment extends Fragment {
         }
         Logger.addLogAdapter(new AndroidLogAdapter());
         String url = "http://api.icndb.com/jokes/random/20";
-        new HttpAsynTask(getActivity()).execute(url);
+        if (isOnline())
+            new HttpAsynTask(getActivity()).execute(url);
+    }
+
+    public boolean isOnline() {
+        ConnectivityManager connMgr = (ConnectivityManager)
+                getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo networkInfo = connMgr.getActiveNetworkInfo();
+        return (networkInfo != null && networkInfo.isConnected());
     }
 
     @Override
