@@ -1,5 +1,6 @@
 package com.cajalopez.apimapsapplication;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -68,5 +69,8 @@ public class MainActivity extends AppCompatActivity implements MainFragment.MyMo
     @Override
     public void notify(MyModel model) {
         Logger.d("ID: " + model.id);
+        Intent intent = new Intent(MainActivity.this, DetailsActivity.class);
+        intent.putExtra("model", model);
+        startActivity(intent);
     }
 }
