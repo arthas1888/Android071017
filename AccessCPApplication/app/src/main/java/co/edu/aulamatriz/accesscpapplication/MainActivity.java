@@ -1,5 +1,8 @@
 package co.edu.aulamatriz.accesscpapplication;
 
+import android.content.Context;
+import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -11,15 +14,18 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity
         implements LoaderManager.LoaderCallbacks<Cursor>, MyCursorRecycler.MyModelCallBack {
 
     private MyCursorRecycler mAdapter;
+    public int error_invalid_email = 0x7f07001b;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,8 +38,15 @@ public class MainActivity extends AppCompatActivity
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+
+               /* Intent intent = new Intent();
+                intent.setAction("android.intent.action.MY_CUSTOM_ACTION");
+                intent.addCategory("android.intent.category.DEFAULT");
+                intent.putExtra("pass", "12345");
+                startActivity(intent);*/
+
+                Intent intent = new Intent(MainActivity.this, AnunciosActivity.class);
+                startActivity(intent);
             }
         });
 
@@ -48,6 +61,16 @@ public class MainActivity extends AppCompatActivity
         mRecyclerView.setAdapter(mAdapter);
 
         getSupportLoaderManager().initLoader(0, null, this);
+
+        try {
+            Context context = createPackageContext(
+                    "com.cajalopez.apimapsapplication", 0);
+            String value = context.getString(error_invalid_email);
+            Log.e("main", value);
+            Toast.makeText(this, value, Toast.LENGTH_LONG).show();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -76,6 +99,7 @@ public class MainActivity extends AppCompatActivity
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         return new CursorLoader(this, Constantes.CONTENT_URI, null, null, null, "joke");
     }
+
     @Override
     public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
         mAdapter.notifyCursor(data);
