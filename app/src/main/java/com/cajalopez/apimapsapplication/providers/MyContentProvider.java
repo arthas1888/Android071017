@@ -1,6 +1,7 @@
 package com.cajalopez.apimapsapplication.providers;
 
 import android.content.ContentProvider;
+import android.content.ContentUris;
 import android.content.ContentValues;
 import android.content.UriMatcher;
 import android.database.Cursor;
@@ -11,6 +12,7 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 import com.cajalopez.apimapsapplication.databases.DBHelper;
+import com.cajalopez.apimapsapplication.utilities.Constantes;
 
 import static com.cajalopez.apimapsapplication.databases.DBHelper.TABLE_NAME;
 
@@ -21,10 +23,15 @@ public class MyContentProvider extends ContentProvider {
     private static final UriMatcher sUriMatcher;
     private static final int DATUM = 1;
     private static final int DATUM_ID = 2;
+    private static final int DATUM_INSERT = 3;
+    private static final int DATUM_BULK_INSERT = 4;
+
     static {
         sUriMatcher = new UriMatcher(UriMatcher.NO_MATCH);
         sUriMatcher.addURI(AUTHORITY, TABLE_NAME, DATUM);
         sUriMatcher.addURI(AUTHORITY, TABLE_NAME + "/#", DATUM_ID);
+        sUriMatcher.addURI(AUTHORITY, TABLE_NAME + "/insert", DATUM_INSERT);
+        sUriMatcher.addURI(AUTHORITY, TABLE_NAME + "/bulk-insert", DATUM_BULK_INSERT);
     }
 
     private DBHelper dbHelper;
@@ -32,7 +39,7 @@ public class MyContentProvider extends ContentProvider {
     @Override
     public boolean onCreate() {
         dbHelper = new DBHelper(getContext());
-        return false;
+        return true;
     }
 
     @Nullable
@@ -44,7 +51,7 @@ public class MyContentProvider extends ContentProvider {
         SQLiteQueryBuilder qb = new SQLiteQueryBuilder();
         qb.setTables(TABLE_NAME);
 
-        switch (sUriMatcher.match(uri)){
+        switch (sUriMatcher.match(uri)) {
             case DATUM:
                 break;
             case DATUM_ID:
@@ -62,13 +69,28 @@ public class MyContentProvider extends ContentProvider {
     @Nullable
     @Override
     public String getType(@NonNull Uri uri) {
-        return null;
+        throw new IllegalArgumentException("Unknown URI " + uri);
     }
 
     @Nullable
     @Override
     public Uri insert(@NonNull Uri uri, @Nullable ContentValues values) {
-        return null;
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        String tableName = "";
+        switch (sUriMatcher.match(uri)) {
+            case DATUM_INSERT:
+                tableName = TABLE_NAME;
+                break;
+            default:
+                break;
+        }
+        long rId = db.insert(tableName, null, values);
+        if (rId > 0) {
+            Uri u = ContentUris.withAppendedId(Constantes.CONTENT_URI, rId);
+            getContext().getContentResolver().notifyChange(u, null);
+            return uri;
+        }
+        return uri;
     }
 
     @Override
@@ -79,5 +101,22 @@ public class MyContentProvider extends ContentProvider {
     @Override
     public int update(@NonNull Uri uri, @Nullable ContentValues values, @Nullable String selection, @Nullable String[] selectionArgs) {
         return 0;
+    }
+
+    @Override
+    public int bulkInsert(@NonNull Uri uri, @NonNull ContentValues[] values) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        int rows = 0;
+        db.beginTransaction();
+        try {
+            for (ContentValues value : values) {
+                db.insert(TABLE_NAME, null, value);
+                rows++;
+            }
+            db.setTransactionSuccessful();
+        } finally {
+            db.endTransaction();
+        }
+        return rows;
     }
 }

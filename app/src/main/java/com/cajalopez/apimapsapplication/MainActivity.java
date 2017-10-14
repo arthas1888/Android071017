@@ -42,6 +42,13 @@ public class MainActivity extends AppCompatActivity implements MainFragment.MyMo
                         .setAction("Action", null).show();
             }
         });
+
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Logger.d("attach fragment");
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.container, new MainFragment());

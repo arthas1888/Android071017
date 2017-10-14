@@ -9,7 +9,7 @@ import com.orhanobut.logger.Logger;
 
 public class DBHelper extends SQLiteOpenHelper{
 
-    private final static int VERSION_DB = 1;
+    private final static int VERSION_DB = 2;
     private final static String DB_NAME = "test";
 
     public final static String TABLE_NAME = "chuck_norris";
@@ -17,14 +17,15 @@ public class DBHelper extends SQLiteOpenHelper{
     public final static String COLUMN_SERVER_ID = "id";
     public final static String COLUMN_NAME = "joke";
     public final static String COLUMN_CAT = "categories";
-    private final SQLiteDatabase db;
+    //private final SQLiteDatabase db;
 
     public DBHelper(Context context) {
         super(context, DB_NAME, null, VERSION_DB);
-        db = this.getReadableDatabase();
+        //
     }
 
     public void deleteRows(int id){
+        SQLiteDatabase db = this.getWritableDatabase();
         String whereClause = "(" + COLUMN_ID + " = %s)";
         String[] whereArgs = {String.valueOf(id)};
         db.delete(TABLE_NAME, null, null);
@@ -35,8 +36,8 @@ public class DBHelper extends SQLiteOpenHelper{
         String query = "CREATE TABLE " + TABLE_NAME + " ("
                 + COLUMN_ID + " integer PRIMARY KEY not null, "
                 + COLUMN_SERVER_ID + " INTEGER, "
-                + COLUMN_NAME + " TEXT "
-                //+ COLUMN_CAT + " TEXT "
+                + COLUMN_NAME + " TEXT, "
+                + COLUMN_CAT + " TEXT "
                 + ")";
         db.execSQL(query);
         Logger.d("Base de datos creada, %s", TABLE_NAME);
@@ -45,7 +46,7 @@ public class DBHelper extends SQLiteOpenHelper{
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
 
-        String query = "DROP TABLE IF EXIST " + TABLE_NAME;
+        String query = "DROP TABLE IF EXISTS " + TABLE_NAME;
         db.execSQL(query);
         onCreate(db);
     }

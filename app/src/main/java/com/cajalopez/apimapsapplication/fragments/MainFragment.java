@@ -1,7 +1,9 @@
 package com.cajalopez.apimapsapplication.fragments;
 
 
+import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -19,6 +21,8 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.RequestFuture;
 import com.cajalopez.apimapsapplication.R;
 import com.cajalopez.apimapsapplication.adapters.MyAdapter;
+import com.cajalopez.apimapsapplication.adapters.MyCursorRecycler;
+import com.cajalopez.apimapsapplication.databases.DBHelper;
 import com.cajalopez.apimapsapplication.models.MyModel;
 import com.cajalopez.apimapsapplication.utilities.MySingleton;
 import com.google.gson.Gson;
@@ -40,11 +44,16 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import javax.net.ssl.HttpsURLConnection;
+
+import static com.cajalopez.apimapsapplication.utilities.Constantes.CONTENT_URI;
+import static com.cajalopez.apimapsapplication.utilities.Constantes.INSERT_URI;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -93,7 +102,7 @@ public class MainFragment extends Fragment {
             mParam2 = getArguments().getString(ARG_PARAM2);
         }
         Logger.addLogAdapter(new AndroidLogAdapter());
-        String url = "http://api.icndb.com/jokes/random/20";
+        String url = "http://api.icndb.com/jokes/random/2000";
         //url = "https://plataforma.visionsatelital.co:9050/points/get_distance/?lat=9999&lon=9999";
         Logger.w("isOnline: " + isOnline());
         if (isOnline())
@@ -125,22 +134,22 @@ public class MainFragment extends Fragment {
 
         private final Context mContext;
 
-        HttpAsynTask(Context context){
+        HttpAsynTask(Context context) {
             mContext = context;
         }
 
         @Override
         protected String doInBackground(String... data) {
             URL url = null;
-            try {
+            return (getDataAPI(data[0])).toString();
+           /* try {
                 url = new URL(data[0]);
                 return downloadUrl(url);
             } catch (MalformedURLException e) {
                 e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
-            }
-            return "";
+            }*/
         }
 
         @Override
@@ -255,19 +264,39 @@ public class MainFragment extends Fragment {
             JSONObject jsonObject = new JSONObject(s);
             JSONArray jsonArray = jsonObject.getJSONArray("value");
 
+            DBHelper dbHelper = new DBHelper(getActivity());
+            dbHelper.deleteRows(0);
+            dbHelper.close();
             Gson gson = new Gson();
-            ArrayList<MyModel> myModelArrayList = gson.fromJson(jsonArray.toString(), new TypeToken<ArrayList<MyModel>>(){}.getType());
+            ArrayList<MyModel> myModelArrayList = gson.fromJson(jsonArray.toString(), new TypeToken<ArrayList<MyModel>>() {
+            }.getType());
+            Date date = new Date();
+            ContentValues[] contentValues = new ContentValues[myModelArrayList.size()];
+            int count = 0;
+            for (MyModel model : myModelArrayList) {
+                ContentValues cv = new ContentValues();
+                cv.put(DBHelper.COLUMN_SERVER_ID, model.id);
+                cv.put(DBHelper.COLUMN_NAME, model.joke);
+                cv.put(DBHelper.COLUMN_CAT, Arrays.toString(model.categories));
+                contentValues[count] = cv;
+                count++;
+                //getActivity().getContentResolver().insert(INSERT_URI, cv);
+            }
+            long rows = getActivity().getContentResolver().bulkInsert(INSERT_URI, contentValues);
+            Logger.w("time: " + (new Date().getTime() - date.getTime()) + ", rows: " + rows);
 
+            Cursor cursor = getActivity().getContentResolver().query(CONTENT_URI, null, null, null, DBHelper.COLUMN_NAME);
             // specify an adapter (see also next example)
-            MyAdapter mAdapter = new MyAdapter(myModelArrayList, mListener);
+            MyCursorRecycler mAdapter = new MyCursorRecycler(cursor, mListener);
             mRecyclerView.setAdapter(mAdapter);
         } catch (JSONException e) {
             e.printStackTrace();
         }
     }
+
     private MyModelCallBack mListener;
 
-    public interface MyModelCallBack{
+    public interface MyModelCallBack {
         void notify(MyModel model, TextView textView);
     }
 
