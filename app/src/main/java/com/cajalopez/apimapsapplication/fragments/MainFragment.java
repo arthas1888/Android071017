@@ -1,8 +1,11 @@
 package com.cajalopez.apimapsapplication.fragments;
 
 
+import android.app.LoaderManager;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.CursorLoader;
+import android.content.Loader;
 import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -60,7 +63,7 @@ import static com.cajalopez.apimapsapplication.utilities.Constantes.INSERT_URI;
  * Use the {@link MainFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class MainFragment extends Fragment {
+public class MainFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -97,6 +100,8 @@ public class MainFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Cursor cursor = getActivity().getContentResolver().query(CONTENT_URI, null, null, null, DBHelper.COLUMN_NAME);
         if (getArguments() != null) {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
@@ -105,7 +110,8 @@ public class MainFragment extends Fragment {
         String url = "http://api.icndb.com/jokes/random/2000";
         //url = "https://plataforma.visionsatelital.co:9050/points/get_distance/?lat=9999&lon=9999";
         Logger.w("isOnline: " + isOnline());
-        if (isOnline())
+
+        if (isOnline() && cursor != null && cursor.getCount() == 0)
             new HttpAsynTask(getActivity()).execute(url);
     }
 
@@ -127,6 +133,21 @@ public class MainFragment extends Fragment {
         LinearLayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
         mRecyclerView.setLayoutManager(mLayoutManager);
         return view;
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        return new CursorLoader(getActivity(), CONTENT_URI, null, null, null, DBHelper.COLUMN_NAME);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+
     }
 
 
