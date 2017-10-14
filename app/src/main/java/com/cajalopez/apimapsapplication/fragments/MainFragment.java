@@ -1,7 +1,5 @@
 package com.cajalopez.apimapsapplication.fragments;
 
-
-import android.app.LoaderManager;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.CursorLoader;
@@ -12,6 +10,7 @@ import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.LoaderManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -73,6 +72,8 @@ public class MainFragment extends Fragment implements LoaderManager.LoaderCallba
     private String mParam1;
     private String mParam2;
     private RecyclerView mRecyclerView;
+    private Cursor cursor;
+    private MyCursorRecycler mAdapter;
 
 
     public MainFragment() {
@@ -101,7 +102,7 @@ public class MainFragment extends Fragment implements LoaderManager.LoaderCallba
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        Cursor cursor = getActivity().getContentResolver().query(CONTENT_URI, null, null, null, DBHelper.COLUMN_NAME);
+        cursor = getActivity().getContentResolver().query(CONTENT_URI, null, null, null, DBHelper.COLUMN_NAME);
         if (getArguments() != null) {
             mParam1 = getArguments().getString(ARG_PARAM1);
             mParam2 = getArguments().getString(ARG_PARAM2);
@@ -132,22 +133,27 @@ public class MainFragment extends Fragment implements LoaderManager.LoaderCallba
         // use a linear layout manager
         LinearLayoutManager mLayoutManager = new LinearLayoutManager(getActivity());
         mRecyclerView.setLayoutManager(mLayoutManager);
+        // specify an adapter (see also next example)
+        mAdapter = new MyCursorRecycler(cursor, mListener);
+        mRecyclerView.setAdapter(mAdapter);
+
+        getLoaderManager().initLoader(1, null, this);
         return view;
     }
 
     @Override
-    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
-        return new CursorLoader(getActivity(), CONTENT_URI, null, null, null, DBHelper.COLUMN_NAME);
+    public android.support.v4.content.Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        return new android.support.v4.content.CursorLoader(getActivity(), CONTENT_URI, null, null, null, DBHelper.COLUMN_NAME);
     }
 
     @Override
-    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
-
+    public void onLoadFinished(android.support.v4.content.Loader<Cursor> loader, Cursor data) {
+        mAdapter.notifyCursor(data);
     }
 
     @Override
-    public void onLoaderReset(Loader<Cursor> loader) {
-
+    public void onLoaderReset(android.support.v4.content.Loader<Cursor> loader) {
+        mAdapter.notifyCursor(null);
     }
 
 
@@ -307,9 +313,7 @@ public class MainFragment extends Fragment implements LoaderManager.LoaderCallba
             Logger.w("time: " + (new Date().getTime() - date.getTime()) + ", rows: " + rows);
 
             Cursor cursor = getActivity().getContentResolver().query(CONTENT_URI, null, null, null, DBHelper.COLUMN_NAME);
-            // specify an adapter (see also next example)
-            MyCursorRecycler mAdapter = new MyCursorRecycler(cursor, mListener);
-            mRecyclerView.setAdapter(mAdapter);
+
         } catch (JSONException e) {
             e.printStackTrace();
         }
